@@ -9,8 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({
+    origin: '*', // Allow requests from all origins
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json()); // Add this to parse JSON body requests
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
