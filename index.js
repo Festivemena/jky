@@ -48,7 +48,7 @@ app.post('/words', async (req, res) => {
         const newWordEntry = new Word({ words });
         await newWordEntry.save();
 
-        const wordList = words.map((word, index) => `${index + 1}. ${word}`).join('<br>');
+        const wordList = {words};
 
         // Send email to two recipients
         await resend.emails.send({
